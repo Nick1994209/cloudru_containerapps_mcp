@@ -11,9 +11,9 @@ if [ -f "cloudru-containerapps-mcp" ]; then
     rm cloudru-containerapps-mcp
 fi
 
-# Build only the main.go file to avoid conflicts with test files
-echo "Compiling main.go..."
-go build -o cloudru-containerapps-mcp main.go
+# Build the MCP server from the cmd directory
+echo "Compiling cmd/cloudru-containerapps-mcp/main.go..."
+go build -o cloudru-containerapps-mcp cmd/cloudru-containerapps-mcp/main.go
 
 if [ $? -eq 0 ]; then
     echo "Build successful!"

@@ -22,17 +22,20 @@ func (d *DescriptionApplication) GetDescription() string {
 1. cloudru_containerapps_description() - Returns usage instructions for this MCP
 2. cloudru_containerapps_docker_login(registry_name, key_id, key_secret) - Login to Docker registry
 3. cloudru_containerapps_docker_push(registry_name, repository_name, image_version, key_id, key_secret) - Build and push Docker image
+4. cloudru_get_list_containerapps(project_id, key_id, key_secret) - Get list of Container Apps
 
 Environment variables can be used as fallbacks for parameters:
 - REGISTRY_NAME: Registry name (e.g., "registry.cloud.ru")
 - KEY_ID: Service account key ID for authentication
 - KEY_SECRET: Service account key secret for authentication
 - REPOSITORY_NAME: Repository name (defaults to current directory name if not set)
+- PROJECT_ID: Project ID for Container Apps (can be obtained from console.cloud.ru)
 - DOCKERFILE: Path to Dockerfile (defaults to "Dockerfile" if not set)
 
 Current configuration values:
 - REGISTRY_NAME: (` + cfg.RegistryName + `) (Registry for storing Docker images)
 - REPOSITORY_NAME: (` + cfg.RepositoryName + `) (Name of the repository in the registry)
+- PROJECT_ID: (` + cfg.ProjectID + `) (Project ID for Container Apps)
 - DOCKERFILE: (` + cfg.Dockerfile + `) (Path to the Dockerfile to build the image, by default Dockerfile)
 - KEY_ID: (` + maskSensitiveInfo(cfg.KeyID) + `) (Authentication key identifier)
 - KEY_SECRET: (` + maskSensitiveInfo(cfg.KeySecret) + `) (Authentication key secret)

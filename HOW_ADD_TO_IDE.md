@@ -11,6 +11,9 @@ Before adding the MCP to your IDE, ensure you have:
    - `REGISTRY_NAME` - Your Cloud.ru registry name
    - `KEY_ID` - Your service account key ID
    - `KEY_SECRET` - Your service account key secret
+   - `DOCKERFILE` - Path to Dockerfile (optional)
+   - `DOCKERFILE_TARGET` - Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
+   - `DOCKERFILE_FOLDER` - Dockerfile folder (build context, optional, defaults to '.' which means current directory)
 
 ## Kilo Code
 
@@ -36,7 +39,10 @@ In Kilo Code, you can set environment variables directly in the MCP server confi
   "REGISTRY_NAME": "your-registry-name",
   "KEY_ID": "your-service-account-key-id",
   "KEY_SECRET": "your-service-account-key-secret",
-  "REPOSITORY_NAME": "your-repository-name"
+  "REPOSITORY_NAME": "your-repository-name",
+  "DOCKERFILE": "Dockerfile",
+  "DOCKERFILE_TARGET": "-",
+  "DOCKERFILE_FOLDER": "."
 }
 ```
 
@@ -47,6 +53,9 @@ REGISTRY_NAME=your-registry-name
 KEY_ID=your-service-account-key-id
 KEY_SECRET=your-service-account-key-secret
 REPOSITORY_NAME=your-repository-name
+DOCKERFILE=Dockerfile
+DOCKERFILE_TARGET=-
+DOCKERFILE_FOLDER=.
 ```
 
 ### Example Configuration JSON
@@ -63,7 +72,10 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
         "REGISTRY_NAME": "your-registry-name",
         "KEY_ID": "your-service-account-key-id",
         "KEY_SECRET": "your-service-account-key-secret",
-        "REPOSITORY_NAME": "your-repository-name"
+        "REPOSITORY_NAME": "your-repository-name",
+        "DOCKERFILE": "Dockerfile",
+        "DOCKERFILE_TARGET": "-",
+        "DOCKERFILE_FOLDER": "."
       }
     }
   }
@@ -119,7 +131,7 @@ Once integrated, you can use the following tools:
 
 1. `cloudru_containerapps_description()` - Get usage instructions
 2. `cloudru_containerapps_docker_login()` - Authenticate with Cloud.ru registry
-3. `cloudru_containerapps_docker_push()` - Build and push Docker images
+3. `cloudru_containerapps_docker_push()` - Build and push Docker images (supports dockerfile_path, dockerfile_target, and dockerfile_folder parameters)
 
 ### Example Prompts
 

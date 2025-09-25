@@ -44,27 +44,57 @@ func (d *DockerApplication) BuildAndPush(image domain.DockerImage, credentials d
 	imageTag := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", credentials.RegistryName, image.RepositoryName, image.ImageVersion)
 
 	// Build the Docker image
-	buildCmd := exec.Command("docker", "build", "--platform", "linux/amd64", "-t", imageTag, "-f", image.DockerfilePath, ".")
+	var buildCmd *exec.Cmd
+	// Set build context folder, default to current directory if not specified
+	buildContext := "."
+	if image.DockerfileFolder != "" && image.DockerfileFolder != "." {
+		buildContext = image.DockerfileFolder
+	}
+
+	if image.DockerfileTarget != "" && image.DockerfileTarget != "-" {
+		buildCmd = exec.Command("docker", "build", "--platform", "linux/amd64", "-t", imageTag, "--target", image.DockerfileTarget, "-f", image.DockerfilePath, buildContext)
+	} else {
+		buildCmd = exec.Command("docker", "build", "--platform", "linux/amd64", "-t", imageTag, "-f", image.DockerfilePath, buildContext)
+	}
 	buildOutput, buildErr := buildCmd.CombinedOutput()
+
+	// Always include build output in the response for visibility
+	if len(buildOutput) > 0 {
+		fmt.Printf("Docker build output:\n%s\n", string(buildOutput))
+	}
+
 	if buildErr != nil {
-		return fmt.Errorf("failed to build Docker image: %w\nOutput: %s", buildErr, string(buildOutput))
+		return fmt.Errorf("failed to build Docker image %s: %w\nOutput: %s", imageTag, buildErr, string(buildOutput))
 	}
 
 	// Push the Docker image
 	pushCmd := exec.Command("docker", "push", imageTag)
 	pushOutput, pushErr := pushCmd.CombinedOutput()
 
+	// Always include push output in the response for visibility
+	if len(pushOutput) > 0 {
+		fmt.Printf("Docker push output:\n%s\n", string(pushOutput))
+	}
+
 	if pushErr != nil {
 		// If push fails, try to re-login if credentials are available
 		if (credentials.KeyID != "") || (credentials.KeySecret != "") {
+			fmt.Println("Attempting to re-login to Docker registry...")
 			loginErr := d.Login(credentials)
 			if loginErr != nil {
 				return fmt.Errorf("docker push failed and re-login unsuccessful: %w\nOutput: %s\n\nTo resolve this issue:\n1. Set KEY_ID and KEY_SECRET environment variables\n2. Or run the cloudru_containerapps_docker_login function\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", loginErr, string(pushOutput))
 			}
 
 			// Retry push after re-login
+			fmt.Println("Retrying Docker push after re-login...")
 			pushCmd = exec.Command("docker", "push", imageTag)
 			pushOutput, pushErr = pushCmd.CombinedOutput()
+
+			// Always include push output in the response for visibility
+			if len(pushOutput) > 0 {
+				fmt.Printf("Docker push retry output:\n%s\n", string(pushOutput))
+			}
+
 			if pushErr != nil {
 				return fmt.Errorf("docker push still failed after re-login: %w\nOutput: %s", pushErr, string(pushOutput))
 			}
