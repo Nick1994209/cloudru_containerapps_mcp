@@ -52,8 +52,8 @@ func maskSensitiveInfo(value string) string {
 	}
 
 	// Show first 2 and last 2 characters, replace the rest with asterisks
-	start := value[:2]
-	end := value[len(value)-2:]
+	start := value[:3]
+	end := value[len(value)-3:]
 	middle := "***"
 
 	return start + middle + end

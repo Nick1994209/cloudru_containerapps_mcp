@@ -17,9 +17,20 @@ func NewDockerApplication() domain.DockerService {
 // Login logs into the Cloud.ru Docker registry using Docker CLI
 func (d *DockerApplication) Login(credentials domain.Credentials) error {
 	loginTarget := fmt.Sprintf("%s.cr.cloud.ru", credentials.RegistryName)
-	cmd := exec.Command("docker", "login", loginTarget, "-u", credentials.KeyID, "-p", credentials.KeySecret)
+	cmd := exec.Command("docker", "login", loginTarget, "-u", credentials.KeyID, "--password-stdin")
+
+	// Create a pipe to send the password to stdin
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdin pipe: %w", err)
+	}
 
 	// Execute the command
+	go func() {
+		defer stdin.Close()
+		fmt.Fprint(stdin, credentials.KeySecret)
+	}()
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("docker login failed: %w\nOutput: %s\n\nPlease ensure:\n1. The registry exists in Cloud.ru Evolution Artifact Registry\n2. You have created a registry and obtained access keys\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", err, string(output))

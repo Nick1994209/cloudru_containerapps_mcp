@@ -69,7 +69,7 @@ func (s *MCPServer) getMCPFieldsOptions(description string, fields ...string) []
 	}
 	for _, field := range fields {
 		fieldData := s.mappedFields[field]
-		if fieldData.envValue != "" {
+		if fieldData.envValue == "" {
 			result = append(result, mcp.WithString(
 				field,
 				mcp.Description(fieldData.description),
