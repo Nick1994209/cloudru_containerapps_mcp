@@ -23,6 +23,8 @@ func (d *DescriptionApplication) GetDescription() string {
 2. cloudru_containerapps_docker_login(registry_name, key_id, key_secret) - Login to Docker registry
 3. cloudru_containerapps_docker_push(registry_name, repository_name, image_version, key_id, key_secret) - Build and push Docker image
 4. cloudru_get_list_containerapps(project_id, key_id, key_secret) - Get list of Container Apps
+5. cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret) - Get a specific Container App by name
+6. cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret) - Create a new Container App
 
 Environment variables can be used as fallbacks for parameters:
 - REGISTRY_NAME: Registry name (e.g., "registry.cloud.ru")
@@ -30,6 +32,7 @@ Environment variables can be used as fallbacks for parameters:
 - KEY_SECRET: Service account key secret for authentication
 - REPOSITORY_NAME: Repository name (defaults to current directory name if not set)
 - PROJECT_ID: Project ID for Container Apps (can be obtained from console.cloud.ru)
+- CONTAINERAPP_NAME: Container App name (optional)
 - DOCKERFILE: Path to Dockerfile (defaults to "Dockerfile" if not set)
 
 Current configuration values:

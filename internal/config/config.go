@@ -15,19 +15,21 @@ type Config struct {
 	DockerfileTarget string
 	DockerfileFolder string
 	ProjectID        string
+	ContainerAppName string
 	CurrentDir       string
 }
 
 // EnvVarNames contains the names of environment variables
 const (
-	EnvRegistryName   = "REGISTRY_NAME"
-	EnvKeyID          = "KEY_ID"
-	EnvKeySecret      = "KEY_SECRET"
-	EnvRepositoryName = "REPOSITORY_NAME"
-	EnvProjectID      = "PROJECT_ID"
-	Dockerfile        = "DOCKERFILE"
-	DockerfileTarget  = "DOCKERFILE_TARGET"
-	DockerfileFolder  = "DOCKERFILE_FOLDER"
+	EnvRegistryName     = "REGISTRY_NAME"
+	EnvKeyID            = "KEY_ID"
+	EnvKeySecret        = "KEY_SECRET"
+	EnvRepositoryName   = "REPOSITORY_NAME"
+	EnvProjectID        = "PROJECT_ID"
+	EnvContainerAppName = "CONTAINERAPP_NAME"
+	Dockerfile          = "DOCKERFILE"
+	DockerfileTarget    = "DOCKERFILE_TARGET"
+	DockerfileFolder    = "DOCKERFILE_FOLDER"
 )
 
 // LoadConfig loads configuration from environment variables
@@ -44,6 +46,7 @@ func LoadConfig() *Config {
 		KeySecret:        os.Getenv(EnvKeySecret),
 		RepositoryName:   os.Getenv(EnvRepositoryName),
 		ProjectID:        os.Getenv(EnvProjectID),
+		ContainerAppName: os.Getenv(EnvContainerAppName),
 		Dockerfile:       os.Getenv(Dockerfile),
 		DockerfileTarget: os.Getenv(DockerfileTarget),
 		DockerfileFolder: os.Getenv(DockerfileFolder),

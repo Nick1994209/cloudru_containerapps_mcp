@@ -21,6 +21,7 @@ type MCPServer struct {
 		envValue     string
 		description  string
 		defaultValue string
+		title        string
 		required     bool
 	}
 	cfg *config.Config
@@ -29,14 +30,23 @@ type MCPServer struct {
 // NewMCPServer creates a new MCP server with the required services
 func NewMCPServer(descriptionService domain.DescriptionService, dockerService domain.DockerService, containerAppsService domain.ContainerAppsService) *MCPServer {
 	cfg := config.LoadConfig()
+
+	defaultRepoName := cfg.CurrentDir
+	if cfg.DockerfileTarget != "" && cfg.DockerfileTarget != "-" {
+		defaultRepoName = defaultRepoName + "-" + cfg.DockerfileTarget
+	}
+
+	containerappImage := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", cfg.RegistryName, cfg.RepositoryName, "latest")
 	return &MCPServer{
 		descriptionService:   descriptionService,
 		dockerService:        dockerService,
 		containerAppsService: containerAppsService,
+
 		mappedFields: map[string]struct {
 			envValue     string
 			description  string
 			defaultValue string
+			title        string
 			required     bool
 		}{
 			"registry_name": {
@@ -57,13 +67,13 @@ func NewMCPServer(descriptionService domain.DescriptionService, dockerService do
 			"repository_name": {
 				envValue:     cfg.RepositoryName,
 				description:  "Repository name",
-				defaultValue: cfg.CurrentDir,
+				defaultValue: defaultRepoName,
 				required:     true,
 			},
 			"image_version": {
-				description:  "Image version",
-				defaultValue: "latest",
-				required:     true,
+				description: "Image version",
+				title:       "For example: latest or v0.0.1",
+				required:    true,
 			},
 			"dockerfile_path": {
 				envValue:     cfg.Dockerfile,
@@ -88,6 +98,23 @@ func NewMCPServer(descriptionService domain.DescriptionService, dockerService do
 				description: "Project ID for Container Apps (can be set via PROJECT_ID environment variable)",
 				required:    true,
 			},
+			"containerapp_name": {
+				envValue:     cfg.ContainerAppName,
+				description:  "Container App name (can be set via CONTAINERAPP_NAME environment variable)",
+				required:     false,
+				defaultValue: cfg.CurrentDir,
+				title:        "You can use example: " + cfg.CurrentDir,
+			},
+			"containerapp_port": {
+				description: "Container App port number",
+				required:    true,
+				title:       "You can use example: 8000",
+			},
+			"containerapp_image": {
+				description: "Container App image",
+				required:    true,
+				title:       "Example image: " + containerappImage,
+			},
 		},
 	}
 }
@@ -101,10 +128,15 @@ func (s *MCPServer) getMCPFieldsOptions(description string, fields ...string) []
 		if fieldData.envValue == "" {
 			opts := []mcp.PropertyOption{
 				mcp.Description(fieldData.description),
-				mcp.DefaultString(fieldData.defaultValue),
 			}
 			if fieldData.required {
 				opts = append(opts, mcp.Required())
+			}
+			if fieldData.title != "" {
+				opts = append(opts, mcp.Title(fieldData.title))
+			}
+			if fieldData.defaultValue != "" {
+				opts = append(opts, mcp.DefaultString(fieldData.defaultValue))
 			}
 			result = append(result, mcp.WithString(field, opts...))
 		}
@@ -180,17 +212,15 @@ func (s *MCPServer) RegisterDockerLoginTool(server *server.MCPServer) {
 		}
 
 		credentials := domain.Credentials{
-			RegistryName: registryName,
-			KeyID:        keyID,
-			KeySecret:    keySecret,
+			KeyID:     keyID,
+			KeySecret: keySecret,
 		}
 
-		err = s.dockerService.Login(credentials)
+		result, err := s.dockerService.Login(registryName, credentials)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
-
-		return mcp.NewToolResultText("Successfully logged into Cloud.ru Docker registry"), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully login to Cloud.ru Artifact Registry: %s", result)), nil
 	})
 }
 
@@ -246,19 +276,18 @@ func (s *MCPServer) RegisterDockerPushTool(server *server.MCPServer) {
 		}
 
 		credentials := domain.Credentials{
-			RegistryName: registryName,
-			KeyID:        keyID,
-			KeySecret:    keySecret,
+			KeyID:     keyID,
+			KeySecret: keySecret,
 		}
 
 		imageTag := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", registryName, repositoryName, imageVersion)
 		fmt.Printf("Starting Docker build and push process for image: %s\n", imageTag)
-		err = s.dockerService.BuildAndPush(image, credentials)
+		result, err := s.dockerService.BuildAndPush(image, credentials)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		return mcp.NewToolResultText(fmt.Sprintf("Successfully built and pushed Docker image to Cloud.ru Artifact Registry: %s", imageTag)), nil
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully built and pushed Docker image to Cloud.ru Artifact Registry: %s", result)), nil
 	})
 }
 
@@ -309,5 +338,137 @@ func (s *MCPServer) RegisterGetListContainerAppsTool(server *server.MCPServer) {
 		}
 
 		return mcp.NewToolResultText(string(result)), nil
+	})
+}
+
+// RegisterGetContainerAppTool registers the get container app tool with the MCP server
+func (s *MCPServer) RegisterGetContainerAppTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Get a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru",
+		"project_id",
+		"containerapp_name",
+		"key_id",
+		"key_secret",
+	)
+	getContainerAppTool := mcp.NewTool("cloudru_get_containerapp", toolOptions...)
+
+	server.AddTool(getContainerAppTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get container app name
+		containerAppName, err := s.getMCPFieldValue("containerapp_name", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Call the service
+		containerApp, err := s.containerAppsService.GetContainerApp(projectID, containerAppName, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Convert to JSON for output
+		result, err := json.MarshalIndent(containerApp, "", "  ")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to format result: %v", err)), nil
+		}
+
+		return mcp.NewToolResultText(string(result)), nil
+	})
+}
+
+// RegisterCreateContainerAppTool registers the create container app tool with the MCP server
+func (s *MCPServer) RegisterCreateContainerAppTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Create a new Container App in Cloud.ru",
+		"project_id",
+		"containerapp_name",
+		"containerapp_port",
+		"containerapp_image",
+		"key_id",
+		"key_secret",
+	)
+	createContainerAppTool := mcp.NewTool("cloudru_create_containerapp", toolOptions...)
+
+	server.AddTool(createContainerAppTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get container app name
+		containerAppName, err := s.getMCPFieldValue("containerapp_name", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get container app port
+		containerAppPortStr, err := s.getMCPFieldValue("containerapp_port", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Convert port to integer
+		var containerAppPort int
+		fmt.Sscanf(containerAppPortStr, "%d", &containerAppPort)
+
+		// Get container app image
+		containerAppImage, err := s.getMCPFieldValue("containerapp_image", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Call the service
+		containerApp, err := s.containerAppsService.CreateContainerApp(projectID, containerAppName, containerAppPort, containerAppImage, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Convert to JSON for output
+		result, err := json.MarshalIndent(containerApp, "", "  ")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to format result: %v", err)), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully created Container App: %s\n%s", containerAppName, string(result))), nil
 	})
 }

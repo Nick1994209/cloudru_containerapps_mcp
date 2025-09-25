@@ -15,14 +15,14 @@ func NewDockerApplication() domain.DockerService {
 }
 
 // Login logs into the Cloud.ru Docker registry using Docker CLI
-func (d *DockerApplication) Login(credentials domain.Credentials) error {
-	loginTarget := fmt.Sprintf("%s.cr.cloud.ru", credentials.RegistryName)
+func (d *DockerApplication) Login(registryName string, credentials domain.Credentials) (string, error) {
+	loginTarget := fmt.Sprintf("%s.cr.cloud.ru", registryName)
 	cmd := exec.Command("docker", "login", loginTarget, "-u", credentials.KeyID, "--password-stdin")
 
 	// Create a pipe to send the password to stdin
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return fmt.Errorf("failed to create stdin pipe: %w", err)
+		return "", fmt.Errorf("failed to create stdin pipe: %w", err)
 	}
 
 	// Execute the command
@@ -33,15 +33,15 @@ func (d *DockerApplication) Login(credentials domain.Credentials) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("docker login failed: %w\nOutput: %s\n\nPlease ensure:\n1. The registry exists in Cloud.ru Evolution Artifact Registry\n2. You have created a registry and obtained access keys\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", err, string(output))
+		return "", fmt.Errorf("docker login to %s failed: %w\nOutput: %s\n\nPlease ensure:\n1. The registry exists in Cloud.ru Evolution Artifact Registry\n2. You have created a registry and obtained access keys\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", loginTarget, err, string(output))
 	}
 
-	return nil
+	return loginTarget, nil
 }
 
 // BuildAndPush builds and pushes a Docker image to Cloud.ru Artifact Registry
-func (d *DockerApplication) BuildAndPush(image domain.DockerImage, credentials domain.Credentials) error {
-	imageTag := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", credentials.RegistryName, image.RepositoryName, image.ImageVersion)
+func (d *DockerApplication) BuildAndPush(image domain.DockerImage, credentials domain.Credentials) (string, error) {
+	imageTag := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", image.RegistryName, image.RepositoryName, image.ImageVersion)
 
 	// Build the Docker image
 	var buildCmd *exec.Cmd
@@ -64,7 +64,7 @@ func (d *DockerApplication) BuildAndPush(image domain.DockerImage, credentials d
 	}
 
 	if buildErr != nil {
-		return fmt.Errorf("failed to build Docker image %s: %w\nOutput: %s", imageTag, buildErr, string(buildOutput))
+		return "", fmt.Errorf("failed to build Docker image %s: %w\nOutput: %s", imageTag, buildErr, string(buildOutput))
 	}
 
 	// Push the Docker image
@@ -80,9 +80,9 @@ func (d *DockerApplication) BuildAndPush(image domain.DockerImage, credentials d
 		// If push fails, try to re-login if credentials are available
 		if (credentials.KeyID != "") || (credentials.KeySecret != "") {
 			fmt.Println("Attempting to re-login to Docker registry...")
-			loginErr := d.Login(credentials)
+			_, loginErr := d.Login(image.RegistryName, credentials)
 			if loginErr != nil {
-				return fmt.Errorf("docker push failed and re-login unsuccessful: %w\nOutput: %s\n\nTo resolve this issue:\n1. Set KEY_ID and KEY_SECRET environment variables\n2. Or run the cloudru_containerapps_docker_login function\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", loginErr, string(pushOutput))
+				return "", fmt.Errorf("docker push failed and re-login unsuccessful: %w\nOutput: %s\n\nTo resolve this issue:\n1. Set KEY_ID and KEY_SECRET environment variables\n2. Or run the cloudru_containerapps_docker_login function\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", loginErr, string(pushOutput))
 			}
 
 			// Retry push after re-login
@@ -96,12 +96,12 @@ func (d *DockerApplication) BuildAndPush(image domain.DockerImage, credentials d
 			}
 
 			if pushErr != nil {
-				return fmt.Errorf("docker push still failed after re-login: %w\nOutput: %s", pushErr, string(pushOutput))
+				return "", fmt.Errorf("docker push still failed after re-login: %w\nOutput: %s", pushErr, string(pushOutput))
 			}
 		} else {
-			return fmt.Errorf("docker push failed: %w\nOutput: %s\n\nTo resolve this issue:\n1. Set KEY_ID and KEY_SECRET environment variables\n2. Or run the cloudru_containerapps_docker_login function\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", pushErr, string(pushOutput))
+			return "", fmt.Errorf("docker push failed: %w\nOutput: %s\n\nTo resolve this issue:\n1. Set KEY_ID and KEY_SECRET environment variables\n2. Or run the cloudru_containerapps_docker_login function\n3. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work", pushErr, string(pushOutput))
 		}
 	}
 
-	return nil
+	return imageTag, nil
 }

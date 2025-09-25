@@ -10,6 +10,7 @@ This MCP provides the following functions:
 2. `cloudru_docker_login(registry_name, key_id, key_secret)` - Login to Cloud.ru Docker registry
 3. `cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder, key_id, key_secret)` - Build and push Docker image to Cloud.ru Artifact Registry
 4. `cloudru_get_list_containerapps(project_id, key_id, key_secret)` - Get list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
+5. `cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret)` - Get a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
 
 ## Prerequisites
 
@@ -35,6 +36,7 @@ The following environment variables can be used as fallbacks for function parame
 - `KEY_SECRET`: Service account key secret
 - `REPOSITORY_NAME`: Repository name (defaults to current directory name if not set)
 - `PROJECT_ID`: Project ID for Container Apps (can be obtained from console.cloud.ru)
+- `CONTAINERAPP_NAME`: Container App name (optional)
 - `DOCKERFILE`: Path to Dockerfile (defaults to 'Dockerfile' if not set)
 - `DOCKERFILE_TARGET`: Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
 - `DOCKERFILE_FOLDER`: Dockerfile folder (build context, defaults to '.' which means current directory)
@@ -86,6 +88,28 @@ Gets a list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_I
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret)
+
+Gets a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru.
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `containerapp_name`: Name of the Container App to retrieve
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret)
+
+Creates a new Container App in Cloud.ru.
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `containerapp_name`: Name of the Container App to create
+- `containerapp_port`: Port number for the Container App
+- `containerapp_image`: Image for the Container App
 - `key_id`: Service account key ID (falls back to KEY_ID env var)
 - `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
 
