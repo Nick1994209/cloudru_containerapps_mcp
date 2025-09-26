@@ -1,4 +1,4 @@
-module github.com/Nick1994209/cloudru_containerapps_mcp
+module github.com/Nick1994209/cloudru-containerapps-mcp
 
 go 1.23.0
 

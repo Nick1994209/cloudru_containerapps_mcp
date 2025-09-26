@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/application"
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/config"
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/application"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/config"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/domain"
 )
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/domain"
 )
 
 // DockerApplication implements the DockerService interface using actual Docker commands

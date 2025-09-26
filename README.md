@@ -7,144 +7,25 @@ A Model Context Protocol (MCP) server for interacting with Cloud.ru Container Ap
 This MCP provides the following functions:
 
 1. `cloudru_containerapps_description()` - Returns usage instructions for this MCP
-2. `cloudru_docker_login(registry_name, key_id, key_secret)` - Login to Cloud.ru Docker registry
-3. `cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder, key_id, key_secret)` - Build and push Docker image to Cloud.ru Artifact Registry
-4. `cloudru_get_list_containerapps(project_id, key_id, key_secret)` - Get list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
-5. `cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret)` - Get a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
-6. `cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret)` - Create a new Container App in Cloud.ru
-7. `cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret)` - Delete a Container App from Cloud.ru. WARNING: This action cannot be undone!
-8. `cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret)` - Start a Container App in Cloud.ru
-9. `cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret)` - Stop a Container App in Cloud.ru
-10. `cloudru_get_list_docker_registries(project_id, key_id, key_secret)` - Get list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
-11. `cloudru_create_docker_registry(project_id, registry_name, is_public, key_id, key_secret)` - Create a new Docker Registry in Cloud.ru
+2. `cloudru_docker_login(registry_name)` - Login to Cloud.ru Docker registry
+3. `cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder)` - Build and push Docker image to Cloud.ru Artifact Registry
+4. `cloudru_get_list_containerapps(project_id)` - Get list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
+5. `cloudru_get_containerapp(project_id, containerapp_name)` - Get a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
+6. `cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image)` - Create a new Container App in Cloud.ru
+7. `cloudru_delete_containerapp(project_id, containerapp_name)` - Delete a Container App from Cloud.ru. WARNING: This action cannot be undone!
+8. `cloudru_start_containerapp(project_id, containerapp_name)` - Start a Container App in Cloud.ru
+9. `cloudru_stop_containerapp(project_id, containerapp_name)` - Stop a Container App in Cloud.ru
+10. `cloudru_get_list_docker_registries(project_id)` - Get list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
+11. `cloudru_create_docker_registry(project_id, registry_name, is_public)` - Create a new Docker Registry in Cloud.ru
 
-## Prerequisites
+## Installation cloudru-containerapps-mcp to your system
+[docs/INSTALLATION.md](docs/INSTALLATION.md)
 
-- Go 1.22 or later
-- Docker installed and configured
-- Access to Cloud.ru Container Apps service
-- Service account credentials with appropriate permissions
+## Add cloudru-containerapps-mcp to your IDE. For example VisualStudioCode or Cursor
+[docs/HOW_ADD_TO_IDE.md](docs/HOW_ADD_TO_IDE.md)
 
-## Installation
-
-There are several ways to install and use this MCP:
-
-### Method 1: Using go install (Recommended for released versions)
-
-If you have Go installed on your system and want to install a released version from GitHub, you can use:
-
-```bash
-go install github.com/Nick1994209/cloudru_containerapps_mcp/cmd/cloudru-containerapps-mcp@latest
-```
-
-This will download, compile, and install the binary to your `$GOPATH/bin` directory.
-
-Note: This method works for released versions that include the proper directory structure.
-For local development or if the remote repository doesn't have the cmd directory yet,
-use the build from source method below.
-
-### Method 2: Building from source
-
-1. Clone this repository
-2. Run `go build -o cloudru-containerapps-mcp` to build the binary
-3. Make sure Docker is installed and running on your system
-
-## Making Go Binaries Available in Your PATH
-
-To use Go-installed binaries from anywhere in your system, you need to ensure your `$GOPATH/bin` directory is in your system PATH.
-
-### Finding Your GOPATH
-
-First, check your GOPATH:
-
-```bash
-go env GOPATH
-```
-
-By default, this is usually `$HOME/go`.
-
-### Adding GOPATH/bin to Your PATH
-
-#### For Bash Users
-
-Add this line to your `~/.bashrc` or `~/.bash_profile`:
-
-```bash
-export PATH=$PATH:$(go env GOPATH)/bin
-```
-
-Then reload your shell configuration:
-
-```bash
-source ~/.bashrc
-# or
-source ~/.bash_profile
-```
-
-#### For Zsh Users
-
-Add this line to your `~/.zshrc`:
-
-```bash
-export PATH=$PATH:$(go env GOPATH)/bin
-```
-
-Then reload your shell configuration:
-
-```bash
-source ~/.zshrc
-```
-
-#### For Fish Users
-
-Add this line to your `~/.config/fish/config.fish`:
-
-```fish
-set -gx PATH $PATH (go env GOPATH)/bin
-```
-
-Then reload your shell configuration:
-
-```bash
-source ~/.config/fish/config.fish
-```
-
-### Verifying the Installation
-
-After adding GOPATH/bin to your PATH, you can verify that the binary is accessible:
-
-```bash
-cloudru-containerapps-mcp --help
-```
-
-Note: Since this is an MCP server that communicates via stdin/stdout, running it directly might not produce visible output. It's meant to be used with MCP-compatible clients like Kilo Code, Roo Code, or Claude.
-
-## Usage
-
-### Environment Variables
-
-The following environment variables can be used as fallbacks for function parameters:
-You can also create a `.env` file in the project root directory with these variables.
-
-The following environment variables can be used as fallbacks for function parameters:
-
-**Required environment variables:**
-- `CLOUDRU_KEY_ID`: Service account key ID (required)
-- `CLOUDRU_KEY_SECRET`: Service account key secret (required)
-
-To obtain access keys for authentication, please follow the instructions at:
-https://cloud.ru/docs/console_api/ug/topics/quickstart
-
-You will need a Key ID and Key Secret to use this service.
-
-**Optional environment variables:**
-- `CLOUDRU_REGISTRY_NAME`: Registry name
-- `CLOUDRU_REPOSITORY_NAME`: Repository name (defaults to current directory name if not set)
-- `CLOUDRU_PROJECT_ID`: Project ID for Container Apps (can be obtained from console.cloud.ru)
-- `CLOUDRU_CONTAINERAPP_NAME`: Container App name (optional)
-- `CLOUDRU_DOCKERFILE`: Path to Dockerfile (defaults to 'Dockerfile' if not set)
-- `CLOUDRU_DOCKERFILE_TARGET`: Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
-- `CLOUDRU_DOCKERFILE_FOLDER`: Dockerfile folder (build context, defaults to '.' which means current directory)
+## MCP Environment variables
+[docs/ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md)
 
 ### Functions
 
@@ -152,14 +33,12 @@ You will need a Key ID and Key Secret to use this service.
 
 Returns usage instructions for this MCP.
 
-#### cloudru_docker_login(registry_name, key_id, key_secret)
+#### cloudru_docker_login(registry_name)
 
 Logs into the Cloud.ru Docker registry using the provided credentials.
 
 Parameters:
 - `registry_name`: Name of the registry (falls back to CLOUDRU_REGISTRY_NAME env var)
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 If login fails, you'll need to:
 1. Go to Cloud.ru Evolution Artifact Registry
@@ -167,7 +46,7 @@ If login fails, you'll need to:
 3. Obtain access keys
 4. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work
 
-#### cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder, key_id, key_secret)
+#### cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder)
 
 Builds a Docker image and pushes it to Cloud.ru Artifact Registry.
 
@@ -178,8 +57,6 @@ Parameters:
 - `dockerfile_path`: Path to Dockerfile (optional, defaults to 'Dockerfile')
 - `dockerfile_target`: Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
 - `dockerfile_folder`: Dockerfile folder (build context, defaults to '.' which means current directory)
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 If Docker push fails due to authentication issues and CLOUDRU_KEY_ID/CLOUDRU_KEY_SECRET environment variables are set, the function will attempt to re-login and retry the push operation.
 
@@ -187,26 +64,22 @@ If Docker push fails due to authentication issues and CLOUDRU_KEY_ID/CLOUDRU_KEY
 
 To start the MCP server, simply run:
 
-#### cloudru_get_list_containerapps(project_id, key_id, key_secret)
+#### cloudru_get_list_containerapps(project_id)
 
 Gets a list of Container Apps from Cloud.ru. Project ID can be set via CLOUDRU_PROJECT_ID environment variable and obtained from console.cloud.ru.
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret)
+#### cloudru_get_containerapp(project_id, containerapp_name)
 
 Gets a specific Container App from Cloud.ru by name. Project ID can be set via CLOUDRU_PROJECT_ID environment variable and obtained from console.cloud.ru.
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to retrieve
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret)
+#### cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image)
 
 Creates a new Container App in Cloud.ru.
 
@@ -215,49 +88,39 @@ Parameters:
 - `containerapp_name`: Name of the Container App to create
 - `containerapp_port`: Port number for the Container App
 - `containerapp_image`: Image for the Container App
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret)
+#### cloudru_delete_containerapp(project_id, containerapp_name)
 
 Deletes a Container App from Cloud.ru. WARNING: This action cannot be undone!
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to delete
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret)
+#### cloudru_start_containerapp(project_id, containerapp_name)
 
 Starts a Container App in Cloud.ru.
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to start
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret)
+#### cloudru_stop_containerapp(project_id, containerapp_name)
 
 Stops a Container App in Cloud.ru.
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to stop
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_get_list_docker_registries(project_id, key_id, key_secret)
+#### cloudru_get_list_docker_registries(project_id)
 
 Gets a list of Docker Registries from Cloud.ru. Project ID can be set via CLOUDRU_PROJECT_ID environment variable and obtained from console.cloud.ru.
 
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-#### cloudru_create_docker_registry(project_id, registry_name, is_public, key_id, key_secret)
+#### cloudru_create_docker_registry(project_id, registry_name, is_public)
 
 Creates a new Docker Registry in Cloud.ru.
 
@@ -265,8 +128,6 @@ Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `registry_name`: Name of the Docker Registry to create
 - `is_public`: Boolean flag indicating if the registry should be public (true) or private (false)
-- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 ## Running the MCP Server
 
@@ -275,14 +136,12 @@ To start the MCP server, you can use either the locally built binary or the Go-i
 ### Using the locally built binary:
 
 ```bash
+git clone <this repo>
+cd cloudru-containerapps-mcp
+go build -o cloudru-containerapps-mcp cmd/cloudru-containerapps-mcp/main.go
 ./cloudru-containerapps-mcp
 ```
-
-### Using the Go-installed binary (if you added GOPATH/bin to your PATH):
-
-```bash
-cloudru-containerapps-mcp
-```
+or [docs/INSTALLATION.md](docs/INSTALLATION.md)
 
 The server will listen for JSON-RPC messages on stdin/stdout.
 

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/domain"
 )
 
 // ContainerAppsApplication implements the ContainerAppsService and DockerRegistryService interfaces
@@ -56,11 +56,14 @@ func (c *ContainerAppsApplication) GetListContainerApps(projectID string, creden
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
-	// Parse response directly as a slice of ContainerApp
-	var containerApps []domain.ContainerApp
-	if err := json.Unmarshal(body, &containerApps); err != nil {
+	// Parse response as a wrapper object containing a slice of ContainerApp
+	var response struct {
+		Data []domain.ContainerApp `json:"data"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, fmt.Errorf("failed to parse containerapps response: %w body length: %d body: %s", err, len(body), string(body))
 	}
+	containerApps := response.Data
 
 	return containerApps, nil
 }

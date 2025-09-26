@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/application"
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
-	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/presentation"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/application"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/domain"
+	"github.com/Nick1994209/cloudru-containerapps-mcp/internal/presentation"
 
 	"github.com/mark3labs/mcp-go/server"
 )

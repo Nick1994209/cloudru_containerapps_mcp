@@ -38,7 +38,7 @@ const (
 // LoadConfig loads configuration from environment variables and .env file
 func LoadConfig() *Config {
 	// Load .env file if it exists
-	err := godotenv.Load()
+	err := godotenv.Overload()
 	if err != nil {
 		log.Println("No .env file found, using environment variables only")
 	}
