@@ -57,16 +57,6 @@ func NewMCPServer(descriptionService domain.DescriptionService, dockerService do
 				description: "Registry name",
 				required:    true,
 			},
-			"key_id": {
-				envValue:    cfg.KeyID,
-				description: "Service account key ID",
-				required:    true,
-			},
-			"key_secret": {
-				envValue:    cfg.KeySecret,
-				description: "Service account key secret",
-				required:    true,
-			},
 			"repository_name": {
 				envValue:     cfg.RepositoryName,
 				description:  "Repository name",
@@ -194,7 +184,7 @@ func (s *MCPServer) RegisterDescriptionTool(server *server.MCPServer) {
 // RegisterDockerLoginTool registers the docker login tool with the MCP server
 func (s *MCPServer) RegisterDockerLoginTool(server *server.MCPServer) {
 	// Prepare tool options including description and fields
-	toolOptions := s.getMCPFieldsOptions("Login to Cloud.ru Artifact registry (Docker registry)", "registry_name", "key_id", "key_secret")
+	toolOptions := s.getMCPFieldsOptions("Login to Cloud.ru Artifact registry (Docker registry)", "registry_name")
 	dockerLoginTool := mcp.NewTool("cloudru_docker_login", toolOptions...)
 
 	server.AddTool(dockerLoginTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -204,19 +194,9 @@ func (s *MCPServer) RegisterDockerLoginTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		result, err := s.dockerService.Login(registryName, credentials)
@@ -238,23 +218,11 @@ func (s *MCPServer) RegisterDockerPushTool(server *server.MCPServer) {
 		"dockerfile_path",
 		"dockerfile_target",
 		"dockerfile_folder",
-		"key_id",
-		"key_secret",
 	)
 	dockerPushTool := mcp.NewTool("cloudru_docker_push", toolOptions...)
 
 	server.AddTool(dockerPushTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		registryName, err := s.getMCPFieldValue("registry_name", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
 		if err != nil {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
@@ -279,8 +247,8 @@ func (s *MCPServer) RegisterDockerPushTool(server *server.MCPServer) {
 		}
 
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		imageTag := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", registryName, repositoryName, imageVersion)
@@ -300,8 +268,6 @@ func (s *MCPServer) RegisterGetListContainerAppsTool(server *server.MCPServer) {
 	toolOptions := s.getMCPFieldsOptions(
 		"Get list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru",
 		"project_id",
-		"key_id",
-		"key_secret",
 	)
 	getListContainerAppsTool := mcp.NewTool("cloudru_get_list_containerapps", toolOptions...)
 
@@ -312,20 +278,9 @@ func (s *MCPServer) RegisterGetListContainerAppsTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service
@@ -351,8 +306,6 @@ func (s *MCPServer) RegisterGetContainerAppTool(server *server.MCPServer) {
 		"Get a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru",
 		"project_id",
 		"containerapp_name",
-		"key_id",
-		"key_secret",
 	)
 	getContainerAppTool := mcp.NewTool("cloudru_get_containerapp", toolOptions...)
 
@@ -369,20 +322,9 @@ func (s *MCPServer) RegisterGetContainerAppTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service
@@ -410,8 +352,6 @@ func (s *MCPServer) RegisterCreateContainerAppTool(server *server.MCPServer) {
 		"containerapp_name",
 		"containerapp_port",
 		"containerapp_image",
-		"key_id",
-		"key_secret",
 	)
 	createContainerAppTool := mcp.NewTool("cloudru_create_containerapp", toolOptions...)
 
@@ -444,20 +384,9 @@ func (s *MCPServer) RegisterCreateContainerAppTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service
@@ -483,8 +412,6 @@ func (s *MCPServer) RegisterDeleteContainerAppTool(server *server.MCPServer) {
 		"Delete a Container App from Cloud.ru. WARNING: This action cannot be undone!",
 		"project_id",
 		"containerapp_name",
-		"key_id",
-		"key_secret",
 	)
 	deleteContainerAppTool := mcp.NewTool("cloudru_delete_containerapp", toolOptions...)
 
@@ -501,20 +428,9 @@ func (s *MCPServer) RegisterDeleteContainerAppTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Confirmation prompt - in MCP context, we'll add a warning in the description
@@ -537,8 +453,6 @@ func (s *MCPServer) RegisterStartContainerAppTool(server *server.MCPServer) {
 		"Start a Container App in Cloud.ru",
 		"project_id",
 		"containerapp_name",
-		"key_id",
-		"key_secret",
 	)
 	startContainerAppTool := mcp.NewTool("cloudru_start_containerapp", toolOptions...)
 
@@ -555,20 +469,9 @@ func (s *MCPServer) RegisterStartContainerAppTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service
@@ -588,8 +491,6 @@ func (s *MCPServer) RegisterStopContainerAppTool(server *server.MCPServer) {
 		"Stop a Container App in Cloud.ru",
 		"project_id",
 		"containerapp_name",
-		"key_id",
-		"key_secret",
 	)
 	stopContainerAppTool := mcp.NewTool("cloudru_stop_containerapp", toolOptions...)
 
@@ -606,20 +507,9 @@ func (s *MCPServer) RegisterStopContainerAppTool(server *server.MCPServer) {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service
@@ -638,8 +528,6 @@ func (s *MCPServer) RegisterGetListDockerRegistriesTool(server *server.MCPServer
 	toolOptions := s.getMCPFieldsOptions(
 		"Get list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru",
 		"project_id",
-		"key_id",
-		"key_secret",
 	)
 	getListDockerRegistriesTool := mcp.NewTool("cloudru_get_list_docker_registries", toolOptions...)
 
@@ -650,20 +538,9 @@ func (s *MCPServer) RegisterGetListDockerRegistriesTool(server *server.MCPServer
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service
@@ -690,8 +567,6 @@ func (s *MCPServer) RegisterCreateDockerRegistryTool(server *server.MCPServer) {
 		"project_id",
 		"registry_name",
 		"is_public",
-		"key_id",
-		"key_secret",
 	)
 	createDockerRegistryTool := mcp.NewTool("cloudru_create_docker_registry", toolOptions...)
 
@@ -724,20 +599,9 @@ func (s *MCPServer) RegisterCreateDockerRegistryTool(server *server.MCPServer) {
 			return mcp.NewToolResultError("is_public must be 'true' or 'false'"), nil
 		}
 
-		// Get credentials
-		keyID, err := s.getMCPFieldValue("key_id", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
-		keySecret, err := s.getMCPFieldValue("key_secret", request)
-		if err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
-		}
-
 		credentials := domain.Credentials{
-			KeyID:     keyID,
-			KeySecret: keySecret,
+			KeyID:     s.cfg.KeyID,
+			KeySecret: s.cfg.KeySecret,
 		}
 
 		// Call the service

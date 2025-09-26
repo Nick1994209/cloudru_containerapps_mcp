@@ -14,13 +14,22 @@ Before adding the MCP to your IDE, ensure you have:
    use the build from source method.
 2. Set up your Cloud.ru credentials as environment variables:
    Alternatively, you can create a `.env` file in the project root directory with these variables.
-   - `REGISTRY_NAME` - Your Cloud.ru registry name
-   - `KEY_ID` - Your service account key ID
-   - `KEY_SECRET` - Your service account key secret
-   - `PROJECT_ID` - Your Cloud.ru project ID
-   - `DOCKERFILE` - Path to Dockerfile (optional)
-   - `DOCKERFILE_TARGET` - Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
-   - `DOCKERFILE_FOLDER` - Dockerfile folder (build context, optional, defaults to '.' which means current directory)
+   
+   **Required environment variables:**
+   - `CLOUDRU_KEY_ID` - Your service account key ID (required)
+   - `CLOUDRU_KEY_SECRET` - Your service account key secret (required)
+   
+   To obtain access keys for authentication, please follow the instructions at:
+   https://cloud.ru/docs/console_api/ug/topics/quickstart
+   
+   You will need a Key ID and Key Secret to use this service.
+   
+   **Optional environment variables:**
+   - `CLOUDRU_REGISTRY_NAME` - Your Cloud.ru registry name
+   - `CLOUDRU_PROJECT_ID` - Your Cloud.ru project ID
+   - `CLOUDRU_DOCKERFILE` - Path to Dockerfile (optional)
+   - `CLOUDRU_DOCKERFILE_TARGET` - Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
+   - `CLOUDRU_DOCKERFILE_FOLDER` - Dockerfile folder (build context, optional, defaults to '.' which means current directory)
 
 ## Kilo Code
 
@@ -43,28 +52,28 @@ In Kilo Code, you can set environment variables directly in the MCP server confi
 
 ```json
 {
-  "REGISTRY_NAME": "your-registry-name",
-  "KEY_ID": "your-service-account-key-id",
-  "KEY_SECRET": "your-service-account-key-secret",
-  "PROJECT_ID": "your-project-id",
-  "REPOSITORY_NAME": "your-repository-name",
-  "DOCKERFILE": "Dockerfile",
-  "DOCKERFILE_TARGET": "-",
-  "DOCKERFILE_FOLDER": "."
+  "CLOUDRU_REGISTRY_NAME": "your-registry-name",
+  "CLOUDRU_KEY_ID": "your-service-account-key-id",
+  "CLOUDRU_KEY_SECRET": "your-service-account-key-secret",
+  "CLOUDRU_PROJECT_ID": "your-project-id",
+  "CLOUDRU_REPOSITORY_NAME": "your-repository-name",
+  "CLOUDRU_DOCKERFILE": "Dockerfile",
+  "CLOUDRU_DOCKERFILE_TARGET": "-",
+  "CLOUDRU_DOCKERFILE_FOLDER": "."
 }
 ```
 
 3. Alternatively, you can set them in the "Environment" field if it accepts key-value pairs:
 
 ```
-REGISTRY_NAME=your-registry-name
-KEY_ID=your-service-account-key-id
-KEY_SECRET=your-service-account-key-secret
-PROJECT_ID=your-project-id
-REPOSITORY_NAME=your-repository-name
-DOCKERFILE=Dockerfile
-DOCKERFILE_TARGET=-
-DOCKERFILE_FOLDER=.
+CLOUDRU_REGISTRY_NAME=your-registry-name
+CLOUDRU_KEY_ID=your-service-account-key-id
+CLOUDRU_KEY_SECRET=your-service-account-key-secret
+CLOUDRU_PROJECT_ID=your-project-id
+CLOUDRU_REPOSITORY_NAME=your-repository-name
+CLOUDRU_DOCKERFILE=Dockerfile
+CLOUDRU_DOCKERFILE_TARGET=-
+CLOUDRU_DOCKERFILE_FOLDER=.
 ```
 
 ### Example Configuration JSON
@@ -78,14 +87,14 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
       "command": "./cloudru-containerapps-mcp",  // or just "cloudru-containerapps-mcp" if installed via go install
       "args": [],
       "env": {
-        "REGISTRY_NAME": "your-registry-name",
-        "KEY_ID": "your-service-account-key-id",
-        "KEY_SECRET": "your-service-account-key-secret",
-        "PROJECT_ID": "your-project-id",
-        "REPOSITORY_NAME": "your-repository-name",
-        "DOCKERFILE": "Dockerfile",
-        "DOCKERFILE_TARGET": "-",
-        "DOCKERFILE_FOLDER": "."
+        "CLOUDRU_REGISTRY_NAME": "your-registry-name",
+        "CLOUDRU_KEY_ID": "your-service-account-key-id",
+        "CLOUDRU_KEY_SECRET": "your-service-account-key-secret",
+        "CLOUDRU_PROJECT_ID": "your-project-id",
+        "CLOUDRU_REPOSITORY_NAME": "your-repository-name",
+        "CLOUDRU_DOCKERFILE": "Dockerfile",
+        "CLOUDRU_DOCKERFILE_TARGET": "-",
+        "CLOUDRU_DOCKERFILE_FOLDER": "."
       }
     }
   }

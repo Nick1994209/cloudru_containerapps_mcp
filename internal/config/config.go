@@ -24,15 +24,15 @@ type Config struct {
 
 // EnvVarNames contains the names of environment variables
 const (
-	EnvRegistryName     = "REGISTRY_NAME"
-	EnvKeyID            = "KEY_ID"
-	EnvKeySecret        = "KEY_SECRET"
-	EnvRepositoryName   = "REPOSITORY_NAME"
-	EnvProjectID        = "PROJECT_ID"
-	EnvContainerAppName = "CONTAINERAPP_NAME"
-	Dockerfile          = "DOCKERFILE"
-	DockerfileTarget    = "DOCKERFILE_TARGET"
-	DockerfileFolder    = "DOCKERFILE_FOLDER"
+	EnvRegistryName     = "CLOUDRU_REGISTRY_NAME"
+	EnvKeyID            = "CLOUDRU_KEY_ID"
+	EnvKeySecret        = "CLOUDRU_KEY_SECRET"
+	EnvRepositoryName   = "CLOUDRU_REPOSITORY_NAME"
+	EnvProjectID        = "CLOUDRU_PROJECT_ID"
+	EnvContainerAppName = "CLOUDRU_CONTAINERAPP_NAME"
+	Dockerfile          = "CLOUDRU_DOCKERFILE"
+	DockerfileTarget    = "CLOUDRU_DOCKERFILE_TARGET"
+	DockerfileFolder    = "CLOUDRU_DOCKERFILE_FOLDER"
 )
 
 // LoadConfig loads configuration from environment variables and .env file
@@ -43,6 +43,19 @@ func LoadConfig() *Config {
 		log.Println("No .env file found, using environment variables only")
 	}
 
+	// Check for required environment variables
+	keyID := os.Getenv(EnvKeyID)
+	keySecret := os.Getenv(EnvKeySecret)
+
+	if keyID == "" || keySecret == "" {
+		log.Fatal(`CLOUDRU_KEY_ID and CLOUDRU_KEY_SECRET environment variables must be set.
+		
+To obtain access keys for authentication, please follow the instructions at:
+https://cloud.ru/docs/console_api/ug/topics/quickstart
+
+You will need a Key ID and Key Secret to use this service.`)
+	}
+
 	dir, err := os.Getwd()
 	if err != nil {
 		dir = "default"
@@ -51,8 +64,8 @@ func LoadConfig() *Config {
 
 	return &Config{
 		RegistryName:     os.Getenv(EnvRegistryName),
-		KeyID:            os.Getenv(EnvKeyID),
-		KeySecret:        os.Getenv(EnvKeySecret),
+		KeyID:            keyID,
+		KeySecret:        keySecret,
 		RepositoryName:   os.Getenv(EnvRepositoryName),
 		ProjectID:        os.Getenv(EnvProjectID),
 		ContainerAppName: os.Getenv(EnvContainerAppName),

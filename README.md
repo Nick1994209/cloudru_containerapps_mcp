@@ -128,15 +128,23 @@ You can also create a `.env` file in the project root directory with these varia
 
 The following environment variables can be used as fallbacks for function parameters:
 
-- `REGISTRY_NAME`: Registry name
-- `KEY_ID`: Service account key ID
-- `KEY_SECRET`: Service account key secret
-- `REPOSITORY_NAME`: Repository name (defaults to current directory name if not set)
-- `PROJECT_ID`: Project ID for Container Apps (can be obtained from console.cloud.ru)
-- `CONTAINERAPP_NAME`: Container App name (optional)
-- `DOCKERFILE`: Path to Dockerfile (defaults to 'Dockerfile' if not set)
-- `DOCKERFILE_TARGET`: Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
-- `DOCKERFILE_FOLDER`: Dockerfile folder (build context, defaults to '.' which means current directory)
+**Required environment variables:**
+- `CLOUDRU_KEY_ID`: Service account key ID (required)
+- `CLOUDRU_KEY_SECRET`: Service account key secret (required)
+
+To obtain access keys for authentication, please follow the instructions at:
+https://cloud.ru/docs/console_api/ug/topics/quickstart
+
+You will need a Key ID and Key Secret to use this service.
+
+**Optional environment variables:**
+- `CLOUDRU_REGISTRY_NAME`: Registry name
+- `CLOUDRU_REPOSITORY_NAME`: Repository name (defaults to current directory name if not set)
+- `CLOUDRU_PROJECT_ID`: Project ID for Container Apps (can be obtained from console.cloud.ru)
+- `CLOUDRU_CONTAINERAPP_NAME`: Container App name (optional)
+- `CLOUDRU_DOCKERFILE`: Path to Dockerfile (defaults to 'Dockerfile' if not set)
+- `CLOUDRU_DOCKERFILE_TARGET`: Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
+- `CLOUDRU_DOCKERFILE_FOLDER`: Dockerfile folder (build context, defaults to '.' which means current directory)
 
 ### Functions
 
@@ -149,9 +157,9 @@ Returns usage instructions for this MCP.
 Logs into the Cloud.ru Docker registry using the provided credentials.
 
 Parameters:
-- `registry_name`: Name of the registry (falls back to REGISTRY_NAME env var)
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `registry_name`: Name of the registry (falls back to CLOUDRU_REGISTRY_NAME env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 If login fails, you'll need to:
 1. Go to Cloud.ru Evolution Artifact Registry
@@ -164,16 +172,16 @@ If login fails, you'll need to:
 Builds a Docker image and pushes it to Cloud.ru Artifact Registry.
 
 Parameters:
-- `registry_name`: Name of the registry (falls back to REGISTRY_NAME env var)
-- `repository_name`: Name of the repository (falls back to REPOSITORY_NAME env var, then to current directory name)
+- `registry_name`: Name of the registry (falls back to CLOUDRU_REGISTRY_NAME env var)
+- `repository_name`: Name of the repository (falls back to CLOUDRU_REPOSITORY_NAME env var, then to current directory name)
 - `image_version`: Version/tag for the image
 - `dockerfile_path`: Path to Dockerfile (optional, defaults to 'Dockerfile')
 - `dockerfile_target`: Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
 - `dockerfile_folder`: Dockerfile folder (build context, defaults to '.' which means current directory)
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
-If Docker push fails due to authentication issues and KEY_ID/KEY_SECRET environment variables are set, the function will attempt to re-login and retry the push operation.
+If Docker push fails due to authentication issues and CLOUDRU_KEY_ID/CLOUDRU_KEY_SECRET environment variables are set, the function will attempt to re-login and retry the push operation.
 
 ## Running the MCP Server
 
@@ -181,84 +189,84 @@ To start the MCP server, simply run:
 
 #### cloudru_get_list_containerapps(project_id, key_id, key_secret)
 
-Gets a list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru.
+Gets a list of Container Apps from Cloud.ru. Project ID can be set via CLOUDRU_PROJECT_ID environment variable and obtained from console.cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret)
 
-Gets a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru.
+Gets a specific Container App from Cloud.ru by name. Project ID can be set via CLOUDRU_PROJECT_ID environment variable and obtained from console.cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to retrieve
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret)
 
 Creates a new Container App in Cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to create
 - `containerapp_port`: Port number for the Container App
 - `containerapp_image`: Image for the Container App
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret)
 
 Deletes a Container App from Cloud.ru. WARNING: This action cannot be undone!
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to delete
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret)
 
 Starts a Container App in Cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to start
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret)
 
 Stops a Container App in Cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to stop
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_get_list_docker_registries(project_id, key_id, key_secret)
 
-Gets a list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru.
+Gets a list of Docker Registries from Cloud.ru. Project ID can be set via CLOUDRU_PROJECT_ID environment variable and obtained from console.cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 #### cloudru_create_docker_registry(project_id, registry_name, is_public, key_id, key_secret)
 
 Creates a new Docker Registry in Cloud.ru.
 
 Parameters:
-- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `project_id`: Project ID in Cloud.ru (falls back to CLOUDRU_PROJECT_ID env var)
 - `registry_name`: Name of the Docker Registry to create
 - `is_public`: Boolean flag indicating if the registry should be public (true) or private (false)
-- `key_id`: Service account key ID (falls back to KEY_ID env var)
-- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+- `key_id`: Service account key ID (falls back to CLOUDRU_KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to CLOUDRU_KEY_SECRET env var)
 
 ## Running the MCP Server
 
