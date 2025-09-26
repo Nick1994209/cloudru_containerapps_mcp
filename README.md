@@ -2,6 +2,32 @@
 
 A Model Context Protocol (MCP) server for interacting with Cloud.ru Container Apps and Artifact Registry.
 
+## What is MCP?
+
+Model Context Protocol (MCP) is an open standard that enables seamless integration between AI assistants and external tools or data sources. It allows AI models to interact with your applications, services, and data in a secure and controlled manner.
+
+With MCP, you can:
+- Extend the capabilities of AI assistants beyond their training data
+- Enable real-time interaction with live systems and APIs
+- Provide contextually relevant information from your own data sources
+- Execute complex workflows without leaving your AI assistant interface
+
+### Example Usage
+
+Instead of manually performing tasks, you can simply ask your AI assistant:
+
+```
+"Deploy my latest application changes to Cloud.ru Container Apps"
+```
+
+Your AI assistant, using this MCP server, can then:
+1. Build a Docker image of your application
+2. Push it to Cloud.ru Artifact Registry
+3. Update your Container App with the new image
+4. Report back the status of the deployment
+
+All of this happens automatically through natural language commands, making complex DevOps tasks accessible to everyone.
+
 ## Features
 
 This MCP provides the following functions:
