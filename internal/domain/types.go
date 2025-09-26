@@ -86,3 +86,17 @@ type ContainerApp struct {
 		} `json:"volumes"`
 	} `json:"template"`
 }
+
+// DockerRegistry represents a Cloud.ru Docker Registry
+type DockerRegistry struct {
+	ID                       string `json:"id"`
+	Name                     string `json:"name"`
+	CreatedAt                string `json:"createdAt"`
+	UpdatedAt                string `json:"updatedAt"`
+	RegistryType             string `json:"registryType"`
+	RetentionPolicyIsEnabled bool   `json:"retentionPolicyIsEnabled"`
+	RetentionPolicy          string `json:"retentionPolicy"`
+	Status                   string `json:"status"`
+	IsPublic                 bool   `json:"isPublic"`
+	QuarantineMode           string `json:"quarantineMode"`
+}

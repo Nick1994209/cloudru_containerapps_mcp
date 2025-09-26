@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/application"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/presentation"
 
 	"github.com/mark3labs/mcp-go/server"
@@ -17,8 +19,12 @@ func main() {
 	// Create application layer
 	descriptionService := application.NewDescriptionApplication()
 
+	// Log the application description
+	log.Println("Application Description:")
+	log.Println(descriptionService.GetDescription())
+
 	// Create presentation layer
-	mcpServer := presentation.NewMCPServer(descriptionService, dockerInfrastructure, containerAppsService)
+	mcpServer := presentation.NewMCPServer(descriptionService, dockerInfrastructure, containerAppsService, containerAppsService.(domain.DockerRegistryService))
 
 	// Create a new MCP server
 	s := server.NewMCPServer(
@@ -38,6 +44,8 @@ func main() {
 	mcpServer.RegisterDeleteContainerAppTool(s)
 	mcpServer.RegisterStartContainerAppTool(s)
 	mcpServer.RegisterStopContainerAppTool(s)
+	mcpServer.RegisterGetListDockerRegistriesTool(s)
+	mcpServer.RegisterCreateDockerRegistryTool(s)
 
 	// Start the server
 	if err := server.ServeStdio(s); err != nil {

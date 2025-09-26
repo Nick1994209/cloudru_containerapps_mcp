@@ -20,3 +20,9 @@ type ContainerAppsService interface {
 	StartContainerApp(projectID string, containerAppName string, credentials Credentials) error
 	StopContainerApp(projectID string, containerAppName string, credentials Credentials) error
 }
+
+// DockerRegistryService handles Cloud.ru Docker Registry API operations
+type DockerRegistryService interface {
+	GetListDockerRegistries(projectID string, credentials Credentials) ([]DockerRegistry, error)
+	CreateDockerRegistry(projectID string, registryName string, isPublic bool, credentials Credentials) (*DockerRegistry, error)
+}

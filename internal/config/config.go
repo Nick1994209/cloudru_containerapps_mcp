@@ -1,8 +1,11 @@
 package config
 
 import (
+	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/joho/godotenv"
 )
 
 // Config holds the configuration for the MCP
@@ -32,8 +35,14 @@ const (
 	DockerfileFolder    = "DOCKERFILE_FOLDER"
 )
 
-// LoadConfig loads configuration from environment variables
+// LoadConfig loads configuration from environment variables and .env file
 func LoadConfig() *Config {
+	// Load .env file if it exists
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found, using environment variables only")
+	}
+
 	dir, err := os.Getwd()
 	if err != nil {
 		dir = "default"

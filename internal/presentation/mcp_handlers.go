@@ -14,9 +14,10 @@ import (
 
 // MCPServer holds the application services
 type MCPServer struct {
-	descriptionService   domain.DescriptionService
-	dockerService        domain.DockerService
-	containerAppsService domain.ContainerAppsService
+	descriptionService    domain.DescriptionService
+	dockerService         domain.DockerService
+	containerAppsService  domain.ContainerAppsService
+	dockerRegistryService domain.DockerRegistryService
 
 	mappedFields map[string]struct {
 		envValue     string
@@ -29,7 +30,7 @@ type MCPServer struct {
 }
 
 // NewMCPServer creates a new MCP server with the required services
-func NewMCPServer(descriptionService domain.DescriptionService, dockerService domain.DockerService, containerAppsService domain.ContainerAppsService) *MCPServer {
+func NewMCPServer(descriptionService domain.DescriptionService, dockerService domain.DockerService, containerAppsService domain.ContainerAppsService, dockerRegistryService domain.DockerRegistryService) *MCPServer {
 	cfg := config.LoadConfig()
 
 	defaultRepoName := cfg.CurrentDir
@@ -39,9 +40,10 @@ func NewMCPServer(descriptionService domain.DescriptionService, dockerService do
 
 	containerappImage := fmt.Sprintf("%s.cr.cloud.ru/%s:%s", cfg.RegistryName, cfg.RepositoryName, "latest")
 	return &MCPServer{
-		descriptionService:   descriptionService,
-		dockerService:        dockerService,
-		containerAppsService: containerAppsService,
+		descriptionService:    descriptionService,
+		dockerService:         dockerService,
+		containerAppsService:  containerAppsService,
+		dockerRegistryService: dockerRegistryService,
 
 		mappedFields: map[string]struct {
 			envValue     string
@@ -627,5 +629,129 @@ func (s *MCPServer) RegisterStopContainerAppTool(server *server.MCPServer) {
 		}
 
 		return mcp.NewToolResultText(fmt.Sprintf("Successfully stopped Container App: %s", containerAppName)), nil
+	})
+}
+
+// RegisterGetListDockerRegistriesTool registers the get list docker registries tool with the MCP server
+func (s *MCPServer) RegisterGetListDockerRegistriesTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Get list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru",
+		"project_id",
+		"key_id",
+		"key_secret",
+	)
+	getListDockerRegistriesTool := mcp.NewTool("cloudru_get_list_docker_registries", toolOptions...)
+
+	server.AddTool(getListDockerRegistriesTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Call the service
+		dockerRegistries, err := s.dockerRegistryService.GetListDockerRegistries(projectID, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Convert to JSON for output
+		result, err := json.MarshalIndent(dockerRegistries, "", "  ")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to format result: %v", err)), nil
+		}
+
+		return mcp.NewToolResultText(string(result)), nil
+	})
+}
+
+// RegisterCreateDockerRegistryTool registers the create docker registry tool with the MCP server
+func (s *MCPServer) RegisterCreateDockerRegistryTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Create a new Docker Registry in Cloud.ru",
+		"project_id",
+		"registry_name",
+		"is_public",
+		"key_id",
+		"key_secret",
+	)
+	createDockerRegistryTool := mcp.NewTool("cloudru_create_docker_registry", toolOptions...)
+
+	server.AddTool(createDockerRegistryTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get registry name
+		registryName, err := s.getMCPFieldValue("registry_name", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get is_public flag
+		isPublicStr, err := s.getMCPFieldValue("is_public", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Convert is_public to boolean
+		var isPublic bool
+		if isPublicStr == "true" || isPublicStr == "1" {
+			isPublic = true
+		} else if isPublicStr == "false" || isPublicStr == "0" {
+			isPublic = false
+		} else {
+			return mcp.NewToolResultError("is_public must be 'true' or 'false'"), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Call the service
+		dockerRegistry, err := s.dockerRegistryService.CreateDockerRegistry(projectID, registryName, isPublic, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Convert to JSON for output
+		result, err := json.MarshalIndent(dockerRegistry, "", "  ")
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("Failed to format result: %v", err)), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully created Docker Registry: %s\n%s", registryName, string(result))), nil
 	})
 }

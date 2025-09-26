@@ -41,3 +41,4 @@ test-mcp
 # Docker related
 .dockerignore
 .kilocode/cloudru-containerapps-mcp
+.env

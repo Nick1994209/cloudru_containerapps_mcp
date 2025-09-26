@@ -13,9 +13,11 @@ Before adding the MCP to your IDE, ensure you have:
    For local development or if the remote repository doesn't have the cmd directory yet,
    use the build from source method.
 2. Set up your Cloud.ru credentials as environment variables:
+   Alternatively, you can create a `.env` file in the project root directory with these variables.
    - `REGISTRY_NAME` - Your Cloud.ru registry name
    - `KEY_ID` - Your service account key ID
    - `KEY_SECRET` - Your service account key secret
+   - `PROJECT_ID` - Your Cloud.ru project ID
    - `DOCKERFILE` - Path to Dockerfile (optional)
    - `DOCKERFILE_TARGET` - Target stage in a multi-stage Dockerfile (optional, defaults to '-' which means no target)
    - `DOCKERFILE_FOLDER` - Dockerfile folder (build context, optional, defaults to '.' which means current directory)
@@ -44,6 +46,7 @@ In Kilo Code, you can set environment variables directly in the MCP server confi
   "REGISTRY_NAME": "your-registry-name",
   "KEY_ID": "your-service-account-key-id",
   "KEY_SECRET": "your-service-account-key-secret",
+  "PROJECT_ID": "your-project-id",
   "REPOSITORY_NAME": "your-repository-name",
   "DOCKERFILE": "Dockerfile",
   "DOCKERFILE_TARGET": "-",
@@ -57,6 +60,7 @@ In Kilo Code, you can set environment variables directly in the MCP server confi
 REGISTRY_NAME=your-registry-name
 KEY_ID=your-service-account-key-id
 KEY_SECRET=your-service-account-key-secret
+PROJECT_ID=your-project-id
 REPOSITORY_NAME=your-repository-name
 DOCKERFILE=Dockerfile
 DOCKERFILE_TARGET=-
@@ -77,6 +81,7 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
         "REGISTRY_NAME": "your-registry-name",
         "KEY_ID": "your-service-account-key-id",
         "KEY_SECRET": "your-service-account-key-secret",
+        "PROJECT_ID": "your-project-id",
         "REPOSITORY_NAME": "your-repository-name",
         "DOCKERFILE": "Dockerfile",
         "DOCKERFILE_TARGET": "-",
@@ -135,14 +140,14 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
 Once integrated, you can use the following tools:
 
 1. `cloudru_containerapps_description()` - Get usage instructions
-2. `cloudru_containerapps_docker_login()` - Authenticate with Cloud.ru registry
-3. `cloudru_containerapps_docker_push()` - Build and push Docker images (supports dockerfile_path, dockerfile_target, and dockerfile_folder parameters)
+2. `cloudru_docker_login()` - Authenticate with Cloud.ru registry
+3. `cloudru_docker_push()` - Build and push Docker images (supports dockerfile_path, dockerfile_target, and dockerfile_folder parameters)
 
 ### Example Prompts
 
 - "Use cloudru_containerapps_description to tell me about this tool"
-- "Run cloudru_containerapps_docker_login with my registry credentials"
-- "Execute cloudru_containerapps_docker_push to deploy my application with version v1.2.3"
+- "Run cloudru_docker_login with my registry credentials"
+- "Execute cloudru_docker_push to deploy my application with version v1.2.3"
 
 ## Troubleshooting
 

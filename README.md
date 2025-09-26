@@ -15,6 +15,8 @@ This MCP provides the following functions:
 7. `cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret)` - Delete a Container App from Cloud.ru. WARNING: This action cannot be undone!
 8. `cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret)` - Start a Container App in Cloud.ru
 9. `cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret)` - Stop a Container App in Cloud.ru
+10. `cloudru_get_list_docker_registries(project_id, key_id, key_secret)` - Get list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
+11. `cloudru_create_docker_registry(project_id, registry_name, is_public, key_id, key_secret)` - Create a new Docker Registry in Cloud.ru
 
 ## Prerequisites
 
@@ -120,6 +122,9 @@ Note: Since this is an MCP server that communicates via stdin/stdout, running it
 ## Usage
 
 ### Environment Variables
+
+The following environment variables can be used as fallbacks for function parameters:
+You can also create a `.env` file in the project root directory with these variables.
 
 The following environment variables can be used as fallbacks for function parameters:
 
@@ -232,6 +237,26 @@ Stops a Container App in Cloud.ru.
 Parameters:
 - `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
 - `containerapp_name`: Name of the Container App to stop
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_get_list_docker_registries(project_id, key_id, key_secret)
+
+Gets a list of Docker Registries from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru.
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_create_docker_registry(project_id, registry_name, is_public, key_id, key_secret)
+
+Creates a new Docker Registry in Cloud.ru.
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `registry_name`: Name of the Docker Registry to create
+- `is_public`: Boolean flag indicating if the registry should be public (true) or private (false)
 - `key_id`: Service account key ID (falls back to KEY_ID env var)
 - `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
 

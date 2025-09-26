@@ -4,28 +4,32 @@ import (
 	"log"
 
 	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/application"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/config"
 	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 )
 
-const project string = "****"
-const key_id string = "****"
-const key_secret string = "****"
-
 func main() {
-	getListContainerApps()
-	createContainerApp("testme", "image.cr.cloud.ru/image", 8080)
-	getContainerApp("testme")
+	cfg := config.LoadConfig()
+
+	getListContainerApps(cfg)
+	// createContainerApp(
+	// 	cfg,
+	// 	"testme",
+	// 	"quickstart.cr.cloud.ru/react-helloworld@sha256:a1a1e0a11299668c5f05a299f74b3943236ca3390a6fda64e98cc2498064c266",
+	// 	8080,
+	// )
+	// getContainerApp(cfg, "testme")
 }
 
-func getListContainerApps() {
+func getListContainerApps(cfg *config.Config) {
 	ca := application.NewContainerAppsApplication()
 
 	log.Println("Testing GetListContainerApps...")
 	cas, err := ca.GetListContainerApps(
-		project,
+		cfg.ProjectID,
 		domain.Credentials{
-			KeyID:     key_id,
-			KeySecret: key_secret,
+			KeyID:     cfg.KeyID,
+			KeySecret: cfg.KeySecret,
 		})
 	if err != nil {
 		log.Printf("GetListContainerApps error: %v", err)
@@ -35,16 +39,16 @@ func getListContainerApps() {
 	}
 }
 
-func getContainerApp(name string) {
+func getContainerApp(cfg *config.Config, name string) {
 	ca := application.NewContainerAppsApplication()
 
 	log.Println("Testing GetContainerApp...")
 	cas_, err := ca.GetContainerApp(
-		project,
+		cfg.ProjectID,
 		name,
 		domain.Credentials{
-			KeyID:     key_id,
-			KeySecret: key_secret,
+			KeyID:     cfg.KeyID,
+			KeySecret: cfg.KeySecret,
 		})
 	if err != nil {
 		log.Printf("GetContainerApp error: %v", err)
@@ -53,18 +57,18 @@ func getContainerApp(name string) {
 	}
 }
 
-func createContainerApp(name, image string, port int) {
+func createContainerApp(cfg *config.Config, name, image string, port int) {
 	ca := application.NewContainerAppsApplication()
 
 	// Test CreateContainerApp
 	containerApp, err := ca.CreateContainerApp(
-		project,
+		cfg.ProjectID,
 		name,
 		port,
 		image,
 		domain.Credentials{
-			KeyID:     key_id,
-			KeySecret: key_secret,
+			KeyID:     cfg.KeyID,
+			KeySecret: cfg.KeySecret,
 		})
 	log.Print(containerApp)
 	if err != nil {

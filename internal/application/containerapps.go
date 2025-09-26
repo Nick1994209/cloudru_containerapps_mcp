@@ -11,7 +11,7 @@ import (
 	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 )
 
-// ContainerAppsApplication implements the ContainerAppsService interface
+// ContainerAppsApplication implements the ContainerAppsService and DockerRegistryService interfaces
 type ContainerAppsApplication struct{}
 
 // NewContainerAppsApplication creates a new ContainerAppsApplication
@@ -28,7 +28,7 @@ func (c *ContainerAppsApplication) GetListContainerApps(projectID string, creden
 	}
 
 	// Make request to ContainerApps API
-	url := fmt.Sprintf("https://containers.api.cloud.ru/v1/containers?projectId=%s&limit=50", projectID)
+	url := fmt.Sprintf("https://containers.api.cloud.ru/v1/containers?projectId=%s", projectID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -56,21 +56,13 @@ func (c *ContainerAppsApplication) GetListContainerApps(projectID string, creden
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
-	// Check if body is empty
-	if len(body) == 0 {
-		// Return empty slice if no container apps found
-		return []domain.ContainerApp{}, nil
-	}
-
-	// Parse response
-	var response struct {
-		Data []domain.ContainerApp `json:"data"`
-	}
-	if err := json.Unmarshal(body, &response); err != nil {
+	// Parse response directly as a slice of ContainerApp
+	var containerApps []domain.ContainerApp
+	if err := json.Unmarshal(body, &containerApps); err != nil {
 		return nil, fmt.Errorf("failed to parse containerapps response: %w body length: %d body: %s", err, len(body), string(body))
 	}
 
-	return response.Data, nil
+	return containerApps, nil
 }
 
 // GetContainerApp gets a specific ContainerApp from Cloud.ru API
@@ -352,7 +344,7 @@ func (c *ContainerAppsApplication) getAccessToken(keyID, keySecret string) (stri
 	}
 
 	// Log the response for debugging
-	log.Printf("getAccessToken response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+	log.Printf("getAccessToken response - Status: %d", resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("authentication failed with status %d: %s", resp.StatusCode, string(body))
@@ -372,4 +364,130 @@ func (c *ContainerAppsApplication) getAccessToken(keyID, keySecret string) (stri
 	}
 
 	return result.AccessToken, nil
+}
+
+// GetListDockerRegistries gets a list of Docker Registries from Cloud.ru API
+func (c *ContainerAppsApplication) GetListDockerRegistries(projectID string, credentials domain.Credentials) ([]domain.DockerRegistry, error) {
+	// Get access token using KEY_ID and KEY_SECRET
+	token, err := c.getAccessToken(credentials.KeyID, credentials.KeySecret)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Make request to Docker Registries API
+	url := fmt.Sprintf("https://ar.api.cloud.ru/v1/projects/%s/registries", projectID)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Log the response for debugging
+	log.Printf("GetListDockerRegistries response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Check if body is empty
+	if len(body) == 0 {
+		// Return empty slice if no registries found
+		return []domain.DockerRegistry{}, nil
+	}
+
+	// Parse response
+	var response struct {
+		Registries []domain.DockerRegistry `json:"registries"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("failed to parse registries response: %w body length: %d body: %s", err, len(body), string(body))
+	}
+
+	// Filter only DOCKER registries
+	dockerRegistries := []domain.DockerRegistry{}
+	for _, registry := range response.Registries {
+		if registry.RegistryType == "DOCKER" {
+			dockerRegistries = append(dockerRegistries, registry)
+		}
+	}
+
+	return dockerRegistries, nil
+}
+
+// CreateDockerRegistry creates a new Docker Registry in Cloud.ru
+func (c *ContainerAppsApplication) CreateDockerRegistry(projectID string, registryName string, isPublic bool, credentials domain.Credentials) (*domain.DockerRegistry, error) {
+	// Get access token using KEY_ID and KEY_SECRET
+	token, err := c.getAccessToken(credentials.KeyID, credentials.KeySecret)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Prepare the request payload
+	payload := map[string]interface{}{
+		"name":         registryName,
+		"isPublic":     isPublic,
+		"registryType": "DOCKER",
+	}
+
+	// Convert payload to JSON
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal payload: %w", err)
+	}
+
+	// Make request to Docker Registries API
+	url := fmt.Sprintf("https://ar.api.cloud.ru/v1/projects/%s/registries", projectID)
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(jsonPayload)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Log the response for debugging
+	log.Printf("CreateDockerRegistry response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Check if body is empty
+	if len(body) == 0 {
+		return nil, fmt.Errorf("API returned empty response body with status %d", resp.StatusCode)
+	}
+
+	// Parse response
+	var registry domain.DockerRegistry
+	if err := json.Unmarshal(body, &registry); err != nil {
+		return nil, fmt.Errorf("failed to parse registry response: %w body length: %d body: %s", err, len(body), string(body))
+	}
+
+	return &registry, nil
 }

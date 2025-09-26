@@ -20,14 +20,16 @@ func (d *DescriptionApplication) GetDescription() string {
 	return `Cloud.ru Container Apps MCP provides functions to interact with Cloud.ru Artifact Registry:
 
 1. cloudru_containerapps_description() - Returns usage instructions for this MCP
-2. cloudru_containerapps_docker_login(registry_name, key_id, key_secret) - Login to Docker registry
-3. cloudru_containerapps_docker_push(registry_name, repository_name, image_version, key_id, key_secret) - Build and push Docker image
+2. cloudru_docker_login(registry_name, key_id, key_secret) - Login to Docker registry
+3. cloudru_docker_push(registry_name, repository_name, image_version, key_id, key_secret) - Build and push Docker image
 4. cloudru_get_list_containerapps(project_id, key_id, key_secret) - Get list of Container Apps
 5. cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret) - Get a specific Container App by name
 6. cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret) - Create a new Container App
 7. cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret) - Delete a Container App (WARNING: This action cannot be undone!)
 8. cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret) - Start a Container App
 9. cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret) - Stop a Container App
+10. cloudru_get_list_docker_registries(project_id, key_id, key_secret) - Get list of Docker Registries
+11. cloudru_create_docker_registry(project_id, registry_name, is_public, key_id, key_secret) - Create a new Docker Registry
 
 Environment variables can be used as fallbacks for parameters:
 - REGISTRY_NAME: Registry name (e.g., "registry.cloud.ru")
