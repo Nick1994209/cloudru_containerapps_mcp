@@ -40,3 +40,4 @@ test-mcp
 
 # Docker related
 .dockerignore
+.kilocode/

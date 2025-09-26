@@ -23,16 +23,12 @@ type ContainerApp struct {
 	Name          string `json:"name"`
 	Description   string `json:"description"`
 	Status        string `json:"status"`
-	CreatedAt     string `json:"createdAt"`
-	UpdatedAt     string `json:"updatedAt"`
-	CreatedBy     string `json:"createdBy"`
-	UpdatedBy     string `json:"updatedBy"`
 	Configuration struct {
 		Ingress struct {
-			PubliclyAccessible     bool          `json:"publiclyAccessible"`
-			PublicUri              string        `json:"publicUri"`
-			InternalUri            string        `json:"internalUri"`
-			AdditionalPortMappings []interface{} `json:"additionalPortMappings"`
+			PubliclyAccessible bool   `json:"publiclyAccessible"`
+			PublicUri          string `json:"publicUri"`
+			//InternalUri            string        `json:"internalUri"`
+			// AdditionalPortMappings []interface{} `json:"additionalPortMappings"`
 		} `json:"ingress"`
 		AutoDeployments struct {
 			Enabled bool   `json:"enabled"`

@@ -472,3 +472,159 @@ func (s *MCPServer) RegisterCreateContainerAppTool(server *server.MCPServer) {
 		return mcp.NewToolResultText(fmt.Sprintf("Successfully created Container App: %s\n%s", containerAppName, string(result))), nil
 	})
 }
+
+// RegisterDeleteContainerAppTool registers the delete container app tool with the MCP server
+func (s *MCPServer) RegisterDeleteContainerAppTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Delete a Container App from Cloud.ru. WARNING: This action cannot be undone!",
+		"project_id",
+		"containerapp_name",
+		"key_id",
+		"key_secret",
+	)
+	deleteContainerAppTool := mcp.NewTool("cloudru_delete_containerapp", toolOptions...)
+
+	server.AddTool(deleteContainerAppTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get container app name
+		containerAppName, err := s.getMCPFieldValue("containerapp_name", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Confirmation prompt - in MCP context, we'll add a warning in the description
+		// but the actual confirmation would typically happen in the client UI
+
+		// Call the service
+		err = s.containerAppsService.DeleteContainerApp(projectID, containerAppName, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully deleted Container App: %s", containerAppName)), nil
+	})
+}
+
+// RegisterStartContainerAppTool registers the start container app tool with the MCP server
+func (s *MCPServer) RegisterStartContainerAppTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Start a Container App in Cloud.ru",
+		"project_id",
+		"containerapp_name",
+		"key_id",
+		"key_secret",
+	)
+	startContainerAppTool := mcp.NewTool("cloudru_start_containerapp", toolOptions...)
+
+	server.AddTool(startContainerAppTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get container app name
+		containerAppName, err := s.getMCPFieldValue("containerapp_name", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Call the service
+		err = s.containerAppsService.StartContainerApp(projectID, containerAppName, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully started Container App: %s", containerAppName)), nil
+	})
+}
+
+// RegisterStopContainerAppTool registers the stop container app tool with the MCP server
+func (s *MCPServer) RegisterStopContainerAppTool(server *server.MCPServer) {
+	// Prepare tool options including description and fields
+	toolOptions := s.getMCPFieldsOptions(
+		"Stop a Container App in Cloud.ru",
+		"project_id",
+		"containerapp_name",
+		"key_id",
+		"key_secret",
+	)
+	stopContainerAppTool := mcp.NewTool("cloudru_stop_containerapp", toolOptions...)
+
+	server.AddTool(stopContainerAppTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		// Get project ID
+		projectID, err := s.getMCPFieldValue("project_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get container app name
+		containerAppName, err := s.getMCPFieldValue("containerapp_name", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		// Get credentials
+		keyID, err := s.getMCPFieldValue("key_id", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		keySecret, err := s.getMCPFieldValue("key_secret", request)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		credentials := domain.Credentials{
+			KeyID:     keyID,
+			KeySecret: keySecret,
+		}
+
+		// Call the service
+		err = s.containerAppsService.StopContainerApp(projectID, containerAppName, credentials)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
+		return mcp.NewToolResultText(fmt.Sprintf("Successfully stopped Container App: %s", containerAppName)), nil
+	})
+}

@@ -11,6 +11,10 @@ This MCP provides the following functions:
 3. `cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder, key_id, key_secret)` - Build and push Docker image to Cloud.ru Artifact Registry
 4. `cloudru_get_list_containerapps(project_id, key_id, key_secret)` - Get list of Container Apps from Cloud.ru. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
 5. `cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret)` - Get a specific Container App from Cloud.ru by name. Project ID can be set via PROJECT_ID environment variable and obtained from console.cloud.ru
+6. `cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret)` - Create a new Container App in Cloud.ru
+7. `cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret)` - Delete a Container App from Cloud.ru. WARNING: This action cannot be undone!
+8. `cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret)` - Start a Container App in Cloud.ru
+9. `cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret)` - Stop a Container App in Cloud.ru
 
 ## Prerequisites
 
@@ -47,7 +51,7 @@ The following environment variables can be used as fallbacks for function parame
 
 Returns usage instructions for this MCP.
 
-#### cloudru_containerapps_docker_login(registry_name, key_id, key_secret)
+#### cloudru_docker_login(registry_name, key_id, key_secret)
 
 Logs into the Cloud.ru Docker registry using the provided credentials.
 
@@ -62,7 +66,7 @@ If login fails, you'll need to:
 3. Obtain access keys
 4. See documentation: https://cloud.ru/docs/container-apps-evolution/ug/topics/tutorials__before-work
 
-#### cloudru_containerapps_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder, key_id, key_secret)
+#### cloudru_docker_push(registry_name, repository_name, image_version, dockerfile_path, dockerfile_target, dockerfile_folder, key_id, key_secret)
 
 Builds a Docker image and pushes it to Cloud.ru Artifact Registry.
 
@@ -110,6 +114,36 @@ Parameters:
 - `containerapp_name`: Name of the Container App to create
 - `containerapp_port`: Port number for the Container App
 - `containerapp_image`: Image for the Container App
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret)
+
+Deletes a Container App from Cloud.ru. WARNING: This action cannot be undone!
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `containerapp_name`: Name of the Container App to delete
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret)
+
+Starts a Container App in Cloud.ru.
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `containerapp_name`: Name of the Container App to start
+- `key_id`: Service account key ID (falls back to KEY_ID env var)
+- `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
+
+#### cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret)
+
+Stops a Container App in Cloud.ru.
+
+Parameters:
+- `project_id`: Project ID in Cloud.ru (falls back to PROJECT_ID env var)
+- `containerapp_name`: Name of the Container App to stop
 - `key_id`: Service account key ID (falls back to KEY_ID env var)
 - `key_secret`: Service account key secret (falls back to KEY_SECRET env var)
 

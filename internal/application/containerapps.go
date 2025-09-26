@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -26,7 +27,7 @@ func (c *ContainerAppsApplication) GetListContainerApps(projectID string, creden
 	}
 
 	// Make request to ContainerApps API
-	url := fmt.Sprintf("https://containers.api.cloud.ru/v1/containers?projectId=%s", projectID)
+	url := fmt.Sprintf("https://containers.api.cloud.ru/v1/containers?projectId=%s&limit=50", projectID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -47,8 +48,17 @@ func (c *ContainerAppsApplication) GetListContainerApps(projectID string, creden
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	// Log the response for debugging
+	log.Printf("GetListContainerApps response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Check if body is empty
+	if len(body) == 0 {
+		// Return empty slice if no container apps found
+		return []domain.ContainerApp{}, nil
 	}
 
 	// Parse response
@@ -56,7 +66,7 @@ func (c *ContainerAppsApplication) GetListContainerApps(projectID string, creden
 		Data []domain.ContainerApp `json:"data"`
 	}
 	if err := json.Unmarshal(body, &response); err != nil {
-		return nil, fmt.Errorf("failed to parse containerapps response: %w body: %s", err, body)
+		return nil, fmt.Errorf("failed to parse containerapps response: %w body length: %d body: %s", err, len(body), string(body))
 	}
 
 	return response.Data, nil
@@ -92,6 +102,9 @@ func (c *ContainerAppsApplication) GetContainerApp(projectID string, containerAp
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	// Log the response for debugging
+	log.Printf("GetContainerApp response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
@@ -104,7 +117,7 @@ func (c *ContainerAppsApplication) GetContainerApp(projectID string, containerAp
 	// Parse response
 	var containerApp domain.ContainerApp
 	if err := json.Unmarshal(body, &containerApp); err != nil {
-		return nil, fmt.Errorf("failed to parse containerapp response: %w body: %s", err, body)
+		return nil, fmt.Errorf("failed to parse containerapp response: %w body length: %d body: %s", err, len(body), string(body))
 	}
 
 	return &containerApp, nil
@@ -123,6 +136,11 @@ func (c *ContainerAppsApplication) CreateContainerApp(projectID string, containe
 		"name":        containerAppName,
 		"projectId":   projectID,
 		"description": fmt.Sprintf("Container App %s created via MCP", containerAppName),
+		"configuration": map[string]interface{}{
+			"ingress": map[string]interface{}{
+				"publiclyAccessible": true,
+			},
+		},
 		"template": map[string]interface{}{
 			"containers": []map[string]interface{}{
 				{
@@ -168,6 +186,9 @@ func (c *ContainerAppsApplication) CreateContainerApp(projectID string, containe
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	// Log the response for debugging
+	log.Printf("CreateContainerApp response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
@@ -180,10 +201,128 @@ func (c *ContainerAppsApplication) CreateContainerApp(projectID string, containe
 	// Parse response
 	var containerApp domain.ContainerApp
 	if err := json.Unmarshal(body, &containerApp); err != nil {
-		return nil, fmt.Errorf("failed to parse containerapp response: %w body: %s", err, body)
+		return nil, fmt.Errorf("failed to parse containerapp response: %w body length: %d body: %s", err, len(body), string(body))
 	}
 
 	return &containerApp, nil
+}
+
+// DeleteContainerApp deletes a ContainerApp from Cloud.ru
+func (c *ContainerAppsApplication) DeleteContainerApp(projectID string, containerAppName string, credentials domain.Credentials) error {
+	// Get access token using KEY_ID and KEY_SECRET
+	token, err := c.getAccessToken(credentials.KeyID, credentials.KeySecret)
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Make DELETE request to ContainerApps API
+	// According to the API documentation: DELETE https://containers.api.cloud.ru/v2/containers/<containerapp_name>
+	url := fmt.Sprintf("https://containers.api.cloud.ru/v2/containers/%s?projectId=%s", containerAppName, projectID)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// According to the API documentation, a successful deletion should return 204 No Content
+	// but we'll accept 200 OK as well
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// StartContainerApp starts a ContainerApp in Cloud.ru
+func (c *ContainerAppsApplication) StartContainerApp(projectID string, containerAppName string, credentials domain.Credentials) error {
+	// Get access token using KEY_ID and KEY_SECRET
+	token, err := c.getAccessToken(credentials.KeyID, credentials.KeySecret)
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Make POST request to ContainerApps API to start the container app
+	// According to the API documentation: POST https://containers.api.cloud.ru/v2/containers/<containerapp_name>:start
+	url := fmt.Sprintf("https://containers.api.cloud.ru/v2/containers/%s:start?projectId=%s", containerAppName, projectID)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// According to the API documentation, a successful start should return 200 OK
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// StopContainerApp stops a ContainerApp in Cloud.ru
+func (c *ContainerAppsApplication) StopContainerApp(projectID string, containerAppName string, credentials domain.Credentials) error {
+	// Get access token using KEY_ID and KEY_SECRET
+	token, err := c.getAccessToken(credentials.KeyID, credentials.KeySecret)
+	if err != nil {
+		return fmt.Errorf("failed to get access token: %w", err)
+	}
+
+	// Make POST request to ContainerApps API to stop the container app
+	// According to the API documentation: POST https://containers.api.cloud.ru/v2/containers/<containerapp_name>:stop
+	url := fmt.Sprintf("https://containers.api.cloud.ru/v2/containers/%s:stop?projectId=%s", containerAppName, projectID)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// According to the API documentation, a successful stop should return 200 OK
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
 }
 
 // getAccessToken gets an access token using KEY_ID and KEY_SECRET
@@ -211,8 +350,16 @@ func (c *ContainerAppsApplication) getAccessToken(keyID, keySecret string) (stri
 		return "", fmt.Errorf("failed to read containerapps response body: %w", err)
 	}
 
+	// Log the response for debugging
+	log.Printf("getAccessToken response - Status: %d, Body length: %d, Body: %s", resp.StatusCode, len(body), string(body))
+
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("authentication failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Check if body is empty
+	if len(body) == 0 {
+		return "", fmt.Errorf("authentication API returned empty response body with status %d", resp.StatusCode)
 	}
 
 	// Parse response to get token
@@ -220,7 +367,7 @@ func (c *ContainerAppsApplication) getAccessToken(keyID, keySecret string) (stri
 		AccessToken string `json:"access_token"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
-		return "", fmt.Errorf("failed to parse token response: %w %s", err, body)
+		return "", fmt.Errorf("failed to parse token response: %w body length: %d body: %s", err, len(body), string(body))
 	}
 
 	return result.AccessToken, nil

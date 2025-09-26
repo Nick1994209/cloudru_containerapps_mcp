@@ -25,11 +25,16 @@ func (d *DescriptionApplication) GetDescription() string {
 4. cloudru_get_list_containerapps(project_id, key_id, key_secret) - Get list of Container Apps
 5. cloudru_get_containerapp(project_id, containerapp_name, key_id, key_secret) - Get a specific Container App by name
 6. cloudru_create_containerapp(project_id, containerapp_name, containerapp_port, containerapp_image, key_id, key_secret) - Create a new Container App
+7. cloudru_delete_containerapp(project_id, containerapp_name, key_id, key_secret) - Delete a Container App (WARNING: This action cannot be undone!)
+8. cloudru_start_containerapp(project_id, containerapp_name, key_id, key_secret) - Start a Container App
+9. cloudru_stop_containerapp(project_id, containerapp_name, key_id, key_secret) - Stop a Container App
 
 Environment variables can be used as fallbacks for parameters:
 - REGISTRY_NAME: Registry name (e.g., "registry.cloud.ru")
 - KEY_ID: Service account key ID for authentication
 - KEY_SECRET: Service account key secret for authentication
+- PROJECT_ID: Project ID for Container Apps (can be obtained from console.cloud.ru)
+- CONTAINERAPP_NAME: Container App name (optional)
 - REPOSITORY_NAME: Repository name (defaults to current directory name if not set)
 - PROJECT_ID: Project ID for Container Apps (can be obtained from console.cloud.ru)
 - CONTAINERAPP_NAME: Container App name (optional)

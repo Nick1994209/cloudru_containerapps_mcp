@@ -16,4 +16,7 @@ type ContainerAppsService interface {
 	GetListContainerApps(projectID string, credentials Credentials) ([]ContainerApp, error)
 	GetContainerApp(projectID string, containerAppName string, credentials Credentials) (*ContainerApp, error)
 	CreateContainerApp(projectID string, containerAppName string, containerAppPort int, containerAppImage string, credentials Credentials) (*ContainerApp, error)
+	DeleteContainerApp(projectID string, containerAppName string, credentials Credentials) error
+	StartContainerApp(projectID string, containerAppName string, credentials Credentials) error
+	StopContainerApp(projectID string, containerAppName string, credentials Credentials) error
 }
