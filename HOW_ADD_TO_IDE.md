@@ -9,7 +9,9 @@ Before adding the MCP to your IDE, ensure you have:
 1. Either build the MCP server: `go build -o cloudru-containerapps-mcp`
    OR install it using: `go install github.com/Nick1994209/cloudru_containerapps_mcp/cmd/cloudru-containerapps-mcp@latest`
    (if using the installed version, make sure GOPATH/bin is in your PATH)
-   Note: This method works for released versions. For local development, use the build from source method.
+   Note: This method works for released versions that include the proper directory structure.
+   For local development or if the remote repository doesn't have the cmd directory yet,
+   use the build from source method.
 2. Set up your Cloud.ru credentials as environment variables:
    - `REGISTRY_NAME` - Your Cloud.ru registry name
    - `KEY_ID` - Your service account key ID

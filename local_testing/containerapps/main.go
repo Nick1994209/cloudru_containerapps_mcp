@@ -1,9 +1,10 @@
 package main
 
 import (
-	"cloudru-containerapps-mcp/internal/application"
-	"cloudru-containerapps-mcp/internal/domain"
 	"log"
+
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/application"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 )
 
 const project string = "****"

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"cloudru-containerapps-mcp/internal/application"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/application"
 )
 
 func main() {

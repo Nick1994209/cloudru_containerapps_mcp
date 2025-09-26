@@ -37,7 +37,9 @@ go install github.com/Nick1994209/cloudru_containerapps_mcp/cmd/cloudru-containe
 
 This will download, compile, and install the binary to your `$GOPATH/bin` directory.
 
-Note: This method works for released versions. For local development, use the build from source method below.
+Note: This method works for released versions that include the proper directory structure.
+For local development or if the remote repository doesn't have the cmd directory yet,
+use the build from source method below.
 
 ### Method 2: Building from source
 
