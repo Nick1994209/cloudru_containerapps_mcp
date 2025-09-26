@@ -1,11 +1,12 @@
 package presentation
 
 import (
-	"cloudru-containerapps-mcp/internal/config"
-	"cloudru-containerapps-mcp/internal/domain"
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/config"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"

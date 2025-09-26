@@ -1,8 +1,8 @@
 package application
 
 import (
-	"cloudru-containerapps-mcp/internal/config"
-	"cloudru-containerapps-mcp/internal/domain"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/config"
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 )
 
 // DescriptionApplication implements the DescriptionService interface

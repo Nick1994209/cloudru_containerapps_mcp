@@ -6,7 +6,10 @@ This guide explains how to integrate the Cloud.ru Container Apps MCP with popula
 
 Before adding the MCP to your IDE, ensure you have:
 
-1. Built the MCP server: `go build -o cloudru-containerapps-mcp`
+1. Either build the MCP server: `go build -o cloudru-containerapps-mcp`
+   OR install it using: `go install github.com/Nick1994209/cloudru_containerapps_mcp/cmd/cloudru-containerapps-mcp@latest`
+   (if using the installed version, make sure GOPATH/bin is in your PATH)
+   Note: This method works for released versions. For local development, use the build from source method.
 2. Set up your Cloud.ru credentials as environment variables:
    - `REGISTRY_NAME` - Your Cloud.ru registry name
    - `KEY_ID` - Your service account key ID
@@ -24,8 +27,8 @@ Before adding the MCP to your IDE, ensure you have:
 3. Click "Add New Server"
 4. Configure with:
    - Name: `Cloud.ru Container Apps`
-   - Command: `./cloudru-containerapps-mcp` (or full path to the binary)
-   - Working Directory: Path to this project directory
+   - Command: `./cloudru-containerapps-mcp` (or just `cloudru-containerapps-mcp` if you've installed it via `go install` and added GOPATH/bin to your PATH)
+   - Working Directory: Path to this project directory (only needed if using the local binary)
 
 ### Setting Environment Variables in Kilo Code
 
@@ -66,7 +69,7 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
 {
   "mcpServers": {
     "cloudru-containerapps-mcp": {
-      "command": "./cloudru-containerapps-mcp",
+      "command": "./cloudru-containerapps-mcp",  // or just "cloudru-containerapps-mcp" if installed via go install
       "args": [],
       "env": {
         "REGISTRY_NAME": "your-registry-name",
@@ -92,7 +95,7 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
 3. Click "Add MCP Server"
 4. Fill in the details:
    - Server Name: `Cloud.ru Container Apps`
-   - Executable Path: Full path to `cloudru-containerapps-mcp`
+   - Executable Path: Full path to `cloudru-containerapps-mcp` (or just `cloudru-containerapps-mcp` if installed via `go install` and GOPATH/bin is in your PATH)
    - Arguments: Leave empty
 5. Configure environment variables in the server settings if supported
 6. Click "Test Connection" to verify
@@ -106,8 +109,8 @@ Here's a complete example of how to configure this MCP server in Kilo Code:
 4. Provide the following configuration:
    - Tool Name: `cloudru-containerapps`
    - Execution Method: `subprocess`
-   - Command: `["./cloudru-containerapps-mcp"]`
-   - Working Directory: Project path
+   - Command: `["./cloudru-containerapps-mcp"]` (or just `["cloudru-containerapps-mcp"]` if installed via `go install`)
+   - Working Directory: Project path (only needed if using the local binary)
    - Environment Variables: Add as key-value pairs in the configuration interface
 5. Save the configuration
 6. The tools will be available in Claude prompts

@@ -1,13 +1,14 @@
 package application
 
 import (
-	"cloudru-containerapps-mcp/internal/domain"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 )
 
 // ContainerAppsApplication implements the ContainerAppsService interface

@@ -35,9 +35,9 @@ ehthumbs.db
 Thumbs.db
 
 # Build artifacts
-cloudru-containerapps-mcp
+./cloudru-containerapps-mcp
 test-mcp
 
 # Docker related
 .dockerignore
-.kilocode/
+.kilocode/cloudru-containerapps-mcp

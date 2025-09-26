@@ -1,9 +1,10 @@
 package application
 
 import (
-	"cloudru-containerapps-mcp/internal/domain"
 	"fmt"
 	"os/exec"
+
+	"github.com/Nick1994209/cloudru_containerapps_mcp/internal/domain"
 )
 
 // DockerApplication implements the DockerService interface using actual Docker commands
